@@ -1,0 +1,55 @@
+services:
+  nginx:
+    build: ./nginx
+    volumes:
+      - ./log/nginx:/var/log/nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - web
+
+  web:
+    build: .
+    command: flask run -h 0.0.0.0
+    env_file:
+      - .env-flask
+    volumes:
+      - ./auth_api:/app/auth_api
+      - ./migrations:/app/migrations
+    depends_on:
+      - db
+      - redis
+      - jaeger
+    expose:
+      - 5000
+
+  db:
+    image: postgres:14.2-bullseye
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env-db
+    expose:
+      - 5432
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7.0.0-bullseye
+    expose:
+      - 6379
+    ports:
+      - "6379:6379"
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.33.0
+    expose:
+      - 16686  # jaeger-ui
+      - 6831  # udp
+    ports:
+      - "16686:16686"
+      - "6831:6831"
+
+volumes:
+  postgres_data:
