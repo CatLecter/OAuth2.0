@@ -101,3 +101,5 @@ ENV/
 
 # Project
 /auth_api/auth_api.db
+/.env-flask
+/.env-db
